@@ -20,7 +20,8 @@ SOURCES += qhub.cpp \
     appinfo.cpp \
     hubauthority.cpp \
     hubuser.cpp \
-    hubrepo.cpp
+    hubrepo.cpp \
+    hubissues.cpp
 
 HEADERS += qhub.h\
     qhub_global.h \
@@ -30,7 +31,8 @@ HEADERS += qhub.h\
     appinfo.h \
     hubauthority.h \
     hubuser.h \
-    hubrepo.h
+    hubrepo.h \
+    hubissues.h
 
 unix {
 copyCommand =
