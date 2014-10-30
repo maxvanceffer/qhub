@@ -7,6 +7,13 @@ Rectangle {
     property var profile: null;
 
     Image {
+        id: appBackground
+        source: themeAppBackground
+        fillMode: Image.Tile
+        anchors.fill: parent
+    }
+
+    Image {
         id: currentDashboardIcon
         width: 50; height: 50
         smooth: true
@@ -45,6 +52,7 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.top: currentDashboardIcon.bottom
         anchors.margins: 8
+        Layout.alignment: Qt.AlignTop
 
         RowLayout {
             id: nameLayout
@@ -135,7 +143,7 @@ Rectangle {
 
             Label {
                 id: bioValue
-                text: profile ? profile.bio : ''
+                text: profile && profile.bio ? profile.bio : ''
             }
         }
     }

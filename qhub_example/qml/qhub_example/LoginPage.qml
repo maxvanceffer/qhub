@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.1
+import QtGraphicalEffects 1.0
 
 Rectangle {
     width: 100
@@ -13,6 +14,13 @@ Rectangle {
             loginHub();
             event.accepted = true;
         }
+    }
+
+    Image {
+        id: appBackground
+        source: themeAppBackground
+        fillMode: Image.Tile
+        anchors.fill: parent
     }
 
     Rectangle {
@@ -37,6 +45,28 @@ Rectangle {
             font.bold: true
             font.italic: true
         }
+    }
+
+    Image {
+        id: githubLogo
+        source: themeAppLogo
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        anchors.bottom: credLayout.top
+        anchors.margins: 10
+        anchors.horizontalCenter: credLayout.horizontalCenter
+        width: credLayout.width / 1.1
+        height: width
+    }
+
+    DropShadow {
+        anchors.fill: githubLogo
+        horizontalOffset: 0
+        verticalOffset: 0
+        radius: 3.0
+        samples: 8
+        color: "#E0D8E0"
+        source: githubLogo
     }
 
     Column {

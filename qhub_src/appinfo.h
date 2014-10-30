@@ -24,6 +24,8 @@ public:
      * @return
      */
     QUrl idUrl() const;
+
+
 };
 
 #endif // APPINFO_H

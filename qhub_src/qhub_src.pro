@@ -89,8 +89,7 @@ isEmpty(target.path) {
 target.path = $${installPrefix}/bin
 export(target.path)
 }
-INSTALLS += target
 
-}
+INSTALLS += target
 
 LIBS += -lssl -lcrypto
