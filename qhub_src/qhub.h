@@ -9,8 +9,17 @@ class QHUBSHARED_EXPORT QHub : public QObject
     Q_OBJECT
     Q_PROPERTY(QString error READ error WRITE setError NOTIFY errorChanged)
     Q_PROPERTY(HubAuthority * authority READ authority NOTIFY authorityChanged)
+    Q_PROPERTY(int rateLimit READ rateLimit WRITE setrateLimit NOTIFY rateLimitChanged)
 public:
     static QHub * instance();
+
+    /**
+     * Return predefined or updated routing, depend on network state
+     *
+     * @brief routings
+     * @return
+     */
+    QHash<QString,QString> routings() const;
 
     QString error() const;
 
@@ -19,6 +28,7 @@ public:
 signals:
     void userChanged(HubAuthority *);
     void userAuthorized();
+    void userUnauthorized();
     void userProfileUpdated();
     void userLoggedIn(HubAuthority *);
     void errorChanged(QString arg);

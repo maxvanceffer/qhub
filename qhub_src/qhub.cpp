@@ -52,6 +52,11 @@ QHub *QHub::instance()
     return m_Instance;
 }
 
+QHash<QString, QString> QHub::routings() const
+{
+    return QHubData::GitHubRouts;
+}
+
 QString QHub::error() const
 {
     return d->m_error;

@@ -1,13 +1,28 @@
 #include "networkconnection.h"
 #include <QPointer>
 
+static int requestCount = 0;
+
+int generateId()
+{
+    if(requestCount >= 1000000)
+    {
+        requestCount = 0;
+    }
+
+    return ++requestCount;
+}
+
 class NetworkConnection::Private
 {
 public:
-    Private(const char * slot ):m_slot(slot){}
+    Private(const char * slot ):m_slot(slot),m_id(generateId()){}
+
+    int m_id;
 
     QPointer<QNetworkReply> rply;
     QPointer<QObject> m_object;
+
     const char * m_slot;
 };
 
@@ -56,4 +71,10 @@ void NetworkConnection::error(const QNetworkReply::NetworkError &err)
 void NetworkConnection::notifyEncrypted()
 {
     qDebug()<<"Request use encrypted protocol";
+}
+
+
+int NetworkConnection::id() const
+{
+    return d->m_id;
 }

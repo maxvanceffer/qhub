@@ -10,12 +10,29 @@
 class NetworkConnection : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int id READ id NOTIFY idChanged)
 public:
     NetworkConnection( QNetworkReply *, const char * slot, QObject * );
     ~NetworkConnection();
 
+    /**
+     * Unique id of this request
+     *
+     * @brief id
+     * @return
+     */
+    int id() const;
+
 signals:
     void done();
+
+    /**
+     * When unique id changed
+     *
+     * @brief idChanged
+     * @param arg
+     */
+    void idChanged(int arg);
 
 public slots:
     void finished();

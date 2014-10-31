@@ -14,13 +14,14 @@ class NetworkManager : public QObject
 public:
     static NetworkManager * instance();
     /**
-     * Create request using method get, and return network reply object
+     * Create request using method get, and return network reply object. If request has no url, then url param will be used for request.
+     * If request param has url, then request url will be used, instead of url param.
      *
      * @brief get
      * @param url
-     * @return
+     * @return int Id of request
      */
-    void get(const QUrl &url, QObject * object, const char *slot );
+    int get(const QUrl &url, QObject * object, const char *slot, const QNetworkRequest &request = QNetworkRequest());
 
     /**
      * @brief post
@@ -28,8 +29,9 @@ public:
      * @param data
      * @param object
      * @param slot
+     * @return int Id of request
      */
-    void post(const QUrl &url, QHttpMultiPart * data, QObject * object, const char * slot);
+    int post(const QUrl &url, QHttpMultiPart * data, QObject * object, const char * slot);
 
     /**
      * @brief post
@@ -37,8 +39,9 @@ public:
      * @param data
      * @param object
      * @param slot
+     * @return int Id of request
      */
-    void post(const QUrl &url, QByteArray data, QObject * object, const char * slot);
+    int post(const QUrl &url, QByteArray data, QObject * object, const char * slot);
 
     /**
      * @brief hasNetwork
@@ -60,9 +63,20 @@ public slots:
     void setAuthority(HubAuthority *);
 
 private slots:
+    /**
+     * @brief networkAccessibleChanged
+     */
     void networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility);
 
+    /**
+     * @brief authenticationRequired
+     */
     void authenticationRequired(QNetworkReply*,QAuthenticator*);
+
+    /**
+     * @brief connectionDone
+     */
+    void connectionDone();
 
 private:
     /**
@@ -81,11 +95,6 @@ private:
      * @return
      */
     NetworkManager& operator = ( const NetworkManager &other );
-
-    /**
-     * @brief m_manager
-     */
-    QNetworkAccessManager * m_manager;
 
     class Private;
     Private * const d;

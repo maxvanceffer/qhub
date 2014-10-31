@@ -17,6 +17,8 @@ public:
     static JsonResponse parseLoginResponse(QByteArray);
 
     static JsonResponse parseProfileResponse(QByteArray);
+
+    static JsonResponse parseNotifications(QByteArray);
 };
 
 class JsonResponse {

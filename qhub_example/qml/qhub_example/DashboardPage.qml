@@ -36,6 +36,8 @@ Rectangle {
         id: currentDashboardIcon
         width: 50; height: 50
         smooth: true
+        cache: true
+        asynchronous: true
         anchors {
             left: parent.left
             leftMargin: 10

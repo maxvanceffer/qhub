@@ -10,6 +10,11 @@ class NetworkManager::Private
 {
 public:
     bool hasNetwork;
+    /**
+     * @brief m_manager
+     */
+    QNetworkAccessManager * m_manager;
+
     QList<NetworkConnection*> connections;
     QPointer<HubAuthority> user;
 };
@@ -17,17 +22,17 @@ public:
 
 NetworkManager::NetworkManager():d(new Private)
 {
-    m_manager = new QNetworkAccessManager(this);
-    connect(m_manager,SIGNAL(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)),
+    d->m_manager = new QNetworkAccessManager(this);
+    connect(d->m_manager,SIGNAL(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)),
             SLOT(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)));
-    connect(m_manager,SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    connect(d->m_manager,SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
-    networkAccessibleChanged(m_manager->networkAccessible());
+    networkAccessibleChanged(d->m_manager->networkAccessible());
 }
 
 NetworkManager::~NetworkManager()
 {
-    delete m_manager;
+    delete d->m_manager;
 }
 
 NetworkManager *NetworkManager::instance()
@@ -41,18 +46,26 @@ NetworkManager *NetworkManager::instance()
     return m_instance;
 }
 
-void NetworkManager::get(const QUrl &url, QObject *object, const char *slot)
+int NetworkManager::get(const QUrl &url, QObject * object, const char *slot, const QNetworkRequest &request)
 {
-    QNetworkRequest request(url);
-    QNetworkReply * rply = m_manager->get(request);
+    QNetworkRequest our_request = request;
+
+    if(our_request.url().isEmpty())
+        our_request.setUrl(url);
+
+    QNetworkReply * rply = d->m_manager->get(our_request);
 
     NetworkConnection * connection = new NetworkConnection(rply,slot,object);
 
     connect(connection,SIGNAL(done()),connection,SLOT(deleteLater()));
+    connect(connection,SIGNAL(done()),SLOT(connectionDone()));
+
     d->connections << connection;
+
+    return connection->id();
 }
 
-void NetworkManager::post(const QUrl &url, QHttpMultiPart *data, QObject *object, const char *slot)
+int NetworkManager::post(const QUrl &url, QHttpMultiPart *data, QObject *object, const char *slot)
 {
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -63,16 +76,18 @@ void NetworkManager::post(const QUrl &url, QHttpMultiPart *data, QObject *object
         request.setRawHeader("Authorization","Basic "+credentials.toBase64());
     }
 
-    QNetworkReply * rply = m_manager->post(request,data);
+    QNetworkReply * rply = d->m_manager->post(request,data);
     data->setParent(rply);
 
     NetworkConnection * connection = new NetworkConnection(rply,slot,object);
 
     connect(connection,SIGNAL(done()),connection,SLOT(deleteLater()));
     d->connections << connection;
+
+    return connection->id();
 }
 
-void NetworkManager::post(const QUrl &url, QByteArray data, QObject *object, const char *slot )
+int NetworkManager::post(const QUrl &url, QByteArray data, QObject *object, const char *slot )
 {
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -83,12 +98,14 @@ void NetworkManager::post(const QUrl &url, QByteArray data, QObject *object, con
         request.setRawHeader("Authorization","Basic "+credentials.toBase64());
     }
 
-    QNetworkReply * rply = m_manager->post(request,data);
+    QNetworkReply * rply = d->m_manager->post(request,data);
 
     NetworkConnection * connection = new NetworkConnection(rply,slot,object);
 
     connect(connection,SIGNAL(done()),connection,SLOT(deleteLater()));
     d->connections << connection;
+
+    return connection->id();
 }
 
 bool NetworkManager::hasNetwork() const
@@ -109,9 +126,19 @@ void NetworkManager::networkAccessibleChanged(QNetworkAccessManager::NetworkAcce
 
 void NetworkManager::authenticationRequired(QNetworkReply * rply, QAuthenticator * auth)
 {
-    qDebug()<<"Auth requaire ";
     if(d->user.isNull()) return;
 
     auth->setUser(d->user->username());
     auth->setPassword(d->user->password());
+}
+
+void NetworkManager::connectionDone()
+{
+    QNetworkReply * rply = qobject_cast<QNetworkReply*>(QObject::sender());
+
+    if(!rply) return;
+
+    int index = d->connections.indexOf(rply);
+    if( index != -1 )
+        d->connections.takeAt(index);
 }

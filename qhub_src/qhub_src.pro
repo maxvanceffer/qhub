@@ -21,7 +21,9 @@ SOURCES += qhub.cpp \
     hubauthority.cpp \
     hubuser.cpp \
     hubrepo.cpp \
-    hubissues.cpp
+    hubissues.cpp \
+    hubnotificationmanager.cpp \
+    hubnotification.cpp
 
 HEADERS += qhub.h\
     qhub_global.h \
@@ -32,7 +34,9 @@ HEADERS += qhub.h\
     hubauthority.h \
     hubuser.h \
     hubrepo.h \
-    hubissues.h
+    hubissues.h \
+    hubnotificationmanager.h \
+    hubnotification.h
 
 unix {
 copyCommand =
