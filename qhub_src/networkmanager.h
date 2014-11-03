@@ -8,9 +8,17 @@
 
 #include "hubauthority.h"
 
+class NetworkConnection;
+
+/**
+ * @brief The NetworkManager class manage all network connections to GitHub API. Also it manage max limits value, and other api params.
+ *
+ */
 class NetworkManager : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QDateTime rateLimitResetTimeout READ rateLimitResetTimeout NOTIFY rateLimitResetTimeoutChanged)
+    Q_PROPERTY(bool isMaximumRateLimitExceeded READ isMaximumRateLimitExceeded NOTIFY maximumRateLimitExceededChanged)
 public:
     static NetworkManager * instance();
     /**
@@ -56,8 +64,21 @@ public:
      */
     HubAuthority * authority();
 
+    /**
+     * @brief rateLimitResetTimeout return time when rate limit will be dropped to max value of rate limit
+     *
+     * @return QDateTime
+     */
+    QDateTime rateLimitResetTimeout() const;
+
+    bool isMaximumRateLimitExceeded() const;
+
 signals:
     void networkAccessEnabled(bool);
+
+    void rateLimitResetTimeoutChanged(QDateTime arg);
+
+    void maximumRateLimitExceededChanged(bool arg);
 
 public slots:
     void setAuthority(HubAuthority *);
@@ -77,6 +98,17 @@ private slots:
      * @brief connectionDone
      */
     void connectionDone();
+
+    /**
+     * @brief makeDefaultConnections
+     */
+    void makeDefaultConnections(NetworkConnection*);
+
+    void rateLimitChanged(int);
+
+    void rateMaxLimitChanged(int);
+
+    void rateTimoutLimitChanged(int);
 
 private:
     /**

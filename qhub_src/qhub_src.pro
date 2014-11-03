@@ -97,5 +97,5 @@ export(target.path)
 }
 
 INSTALLS += target
-
-LIBS += -lssl -lcrypto
+INCLUDEPATH += /home/
+#LIBS += -lssl -lcrypto

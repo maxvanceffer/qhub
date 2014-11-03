@@ -17,11 +17,16 @@ public:
 
     QList<NetworkConnection*> connections;
     QPointer<HubAuthority> user;
+    int rateMaxLimit, rateLimitLeft, rateResetTimeout;
 };
 
 
 NetworkManager::NetworkManager():d(new Private)
 {
+    d->rateLimitLeft = 0;
+    d->rateMaxLimit  = 0;
+    d->rateResetTimeout = 0;
+
     d->m_manager = new QNetworkAccessManager(this);
     connect(d->m_manager,SIGNAL(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)),
             SLOT(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)));
@@ -48,6 +53,11 @@ NetworkManager *NetworkManager::instance()
 
 int NetworkManager::get(const QUrl &url, QObject * object, const char *slot, const QNetworkRequest &request)
 {
+    if(isMaximumRateLimitExceeded()) {
+        qWarning()<<"Maxim rate limit exceeded";
+        return 0;
+    }
+
     QNetworkRequest our_request = request;
 
     if(our_request.url().isEmpty())
@@ -57,16 +67,18 @@ int NetworkManager::get(const QUrl &url, QObject * object, const char *slot, con
 
     NetworkConnection * connection = new NetworkConnection(rply,slot,object);
 
-    connect(connection,SIGNAL(done()),connection,SLOT(deleteLater()));
-    connect(connection,SIGNAL(done()),SLOT(connectionDone()));
-
-    d->connections << connection;
+    makeDefaultConnections(connection);
 
     return connection->id();
 }
 
 int NetworkManager::post(const QUrl &url, QHttpMultiPart *data, QObject *object, const char *slot)
 {
+    if(isMaximumRateLimitExceeded()) {
+        qWarning()<<"Maxim rate limit exceeded";
+        return 0;
+    }
+
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
@@ -81,14 +93,18 @@ int NetworkManager::post(const QUrl &url, QHttpMultiPart *data, QObject *object,
 
     NetworkConnection * connection = new NetworkConnection(rply,slot,object);
 
-    connect(connection,SIGNAL(done()),connection,SLOT(deleteLater()));
-    d->connections << connection;
+    makeDefaultConnections(connection);
 
     return connection->id();
 }
 
 int NetworkManager::post(const QUrl &url, QByteArray data, QObject *object, const char *slot )
 {
+    if(isMaximumRateLimitExceeded()) {
+        qWarning()<<"Maxim rate limit exceeded";
+        return 0;
+    }
+
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
@@ -102,8 +118,7 @@ int NetworkManager::post(const QUrl &url, QByteArray data, QObject *object, cons
 
     NetworkConnection * connection = new NetworkConnection(rply,slot,object);
 
-    connect(connection,SIGNAL(done()),connection,SLOT(deleteLater()));
-    d->connections << connection;
+    makeDefaultConnections(connection);
 
     return connection->id();
 }
@@ -111,6 +126,18 @@ int NetworkManager::post(const QUrl &url, QByteArray data, QObject *object, cons
 bool NetworkManager::hasNetwork() const
 {
     return d->hasNetwork;
+}
+
+QDateTime NetworkManager::rateLimitResetTimeout() const
+{
+    QDateTime dt;
+    dt.setMSecsSinceEpoch(d->rateResetTimeout);
+    return dt;
+}
+
+bool NetworkManager::isMaximumRateLimitExceeded() const
+{
+    return d->rateLimitLeft ? false : true;
 }
 
 void NetworkManager::setAuthority(HubAuthority * auth)
@@ -126,6 +153,7 @@ void NetworkManager::networkAccessibleChanged(QNetworkAccessManager::NetworkAcce
 
 void NetworkManager::authenticationRequired(QNetworkReply * rply, QAuthenticator * auth)
 {
+    Q_UNUSED(rply);
     if(d->user.isNull()) return;
 
     auth->setUser(d->user->username());
@@ -134,11 +162,56 @@ void NetworkManager::authenticationRequired(QNetworkReply * rply, QAuthenticator
 
 void NetworkManager::connectionDone()
 {
-    QNetworkReply * rply = qobject_cast<QNetworkReply*>(QObject::sender());
+    NetworkConnection * nc = qobject_cast<NetworkConnection*>(QObject::sender());
 
-    if(!rply) return;
+    if(!nc) return;
 
-    int index = d->connections.indexOf(rply);
+    int index = d->connections.indexOf(nc);
     if( index != -1 )
         d->connections.takeAt(index);
+
+    nc->deleteLater();
+}
+
+void NetworkManager::makeDefaultConnections(NetworkConnection *connection)
+{
+    d->connections << connection;
+
+    connect(connection,SIGNAL(rateLimitChanged(int)),SLOT(rateLimitChanged(int)));
+    connect(connection,SIGNAL(rateMaxLimitChanged(int)),SLOT(rateMaxLimitChanged(int)));
+    connect(connection,SIGNAL(rateLimitResetMilsec(int)),SLOT(rateTimoutLimitChanged(int)));
+
+    connect(connection,SIGNAL(done()),connection,SLOT(deleteLater()));
+    connect(connection,SIGNAL(done()),SLOT(connectionDone()));
+}
+
+void NetworkManager::rateLimitChanged(int value)
+{
+    qDebug()<<"Rate limit changed "<<value;
+    // Check if we exceeded rate limit
+    if(!value) {
+        emit maximumRateLimitExceededChanged(true);
+    }
+
+    // Check if really changed
+    if(d->rateLimitLeft != value) {
+        d->rateLimitLeft = value;
+        emit rateLimitChanged(value);
+    }
+}
+
+void NetworkManager::rateMaxLimitChanged(int value)
+{
+    if(d->rateMaxLimit != value) {
+        d->rateMaxLimit = value;
+        emit rateMaxLimitChanged(value);
+    }
+}
+
+void NetworkManager::rateTimoutLimitChanged(int value)
+{
+    if(d->rateResetTimeout != value) {
+        d->rateResetTimeout = value;
+        emit rateLimitResetTimeoutChanged(rateLimitResetTimeout());
+    }
 }

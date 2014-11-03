@@ -34,10 +34,48 @@ signals:
      */
     void idChanged(int arg);
 
+    /**
+     * This will fire if server response was not 200 or response code was above 400.
+     * @note This function will fire before done()
+     * @brief error
+     * @param code
+     * @param body
+     */
+    void error( int code, QByteArray body );
+
+    /**
+     *
+     * @brief rateLimitChanged Will fire every request if rate limit changed in request. As for notifications api, if no changes was, then rate
+     * limit will stay the same, so no signals will fire.
+     */
+    void rateLimitChanged(int);
+
+    /**
+     * @brief rateMaxLimitChanged Emited when maximum limit requests changed
+     */
+    void rateMaxLimitChanged(int);
+
+    /**
+     * @brief rateLimitResetMilsec
+     */
+    void rateLimitResetMilsec(int);
+
+    /**
+     * Will fire if changes in header keys will be detected
+     *
+     * @brief pollTimeoutChanged
+     */
+    void pollTimeoutChanged(int);
+
 public slots:
     void finished();
     void error(const QNetworkReply::NetworkError &err);
     void notifyEncrypted();
+
+private slots:
+    void reportError();
+    void parseRateLimit();
+
 private:
     class Private;
     Private * const d;

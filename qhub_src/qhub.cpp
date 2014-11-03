@@ -23,6 +23,7 @@ class QHub::Private
 public:
     QPointer<HubAuthority> m_current;
     QString m_error;
+    int m_rateLimit;
 };
 
 QHub::QHub():d(new Private)

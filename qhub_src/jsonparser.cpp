@@ -1,11 +1,24 @@
 #include "jsonparser.h"
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonObject>
 #include <QStringList>
 #include <QVariantMap>
 
 #include "qhub.h"
+
+#ifdef Q_OS_LINUX
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#endif
+
+#ifdef Q_OS_WIN
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#endif
+
+#ifdef Q_OS_QNX
+#include <bb/data/JsonDataAccess>
+#endif
 
 QMap<QString,QString> initProfileMap()
 {

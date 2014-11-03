@@ -9,7 +9,6 @@ class QHUBSHARED_EXPORT QHub : public QObject
     Q_OBJECT
     Q_PROPERTY(QString error READ error WRITE setError NOTIFY errorChanged)
     Q_PROPERTY(HubAuthority * authority READ authority NOTIFY authorityChanged)
-    Q_PROPERTY(int rateLimit READ rateLimit WRITE setrateLimit NOTIFY rateLimitChanged)
 public:
     static QHub * instance();
 
@@ -32,7 +31,6 @@ signals:
     void userProfileUpdated();
     void userLoggedIn(HubAuthority *);
     void errorChanged(QString arg);
-
     void authorityChanged(HubAuthority * arg);
 
 public slots:
@@ -46,6 +44,7 @@ private slots:
     void onRoutesReceived(QByteArray);
     void onLoginResponse(QByteArray);
     void onUserResponse(QByteArray);
+
 private :
     QHub();
     ~QHub();

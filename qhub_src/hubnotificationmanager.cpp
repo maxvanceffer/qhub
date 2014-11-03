@@ -58,7 +58,7 @@ void HubNotificationManager::poll()
     QString modifiedSince = d->m_lastRequestTime.toUTC().toString("ddd, dd MMM yyyy hh:mm:ss") + "GMT";
 
     QNetworkRequest request(url);
-    request.setRawHeader("Last-Modified",modifiedSince);
+    request.setRawHeader("Last-Modified",modifiedSince.toLatin1());
 
     d->m_requestId = NetworkManager::instance()->get(url,this,"pollingResponse");
 }
