@@ -19,7 +19,7 @@ int generateId()
 class NetworkConnection::Private
 {
 public:
-    Private(const char * slot ):m_slot(slot),m_id(generateId()){}
+    Private(const char * slot ):m_id(generateId()),m_slot(slot){}
 
     int m_id;
 
@@ -27,6 +27,7 @@ public:
     QPointer<QObject> m_object;
 
     const char * m_slot;
+    int m_rateLimitReset, m_rateMaxLimit, m_rateLimit, m_pollInterval;
 };
 
 
@@ -37,6 +38,10 @@ NetworkConnection::NetworkConnection(QNetworkReply *rply, const char *slot, QObj
 
     d->rply = ptr1;
     d->m_object = ptr2;
+    d->m_rateLimit = 0;
+    d->m_rateLimitReset = 0;
+    d->m_rateMaxLimit   = 0;
+    d->m_pollInterval   = 0;
 
     connect(rply,SIGNAL(finished()),SLOT(finished()));
     connect(rply,SIGNAL(error(QNetworkReply::NetworkError)),SLOT(error(QNetworkReply::NetworkError)));
@@ -73,6 +78,15 @@ void NetworkConnection::finished()
 
 void NetworkConnection::error(const QNetworkReply::NetworkError &err)
 {
+    if(err) {
+        qWarning()<<"Request error: "<<d->rply->errorString();
+    }
+
+    if(!QMetaObject::invokeMethod(d->m_object,d->m_slot,Q_ARG(QByteArray,"")))
+    {
+        qWarning()<<"Can not invoke method "<<d->m_slot<<" for finished request";
+    }
+
     emit done();
 }
 
@@ -89,25 +103,36 @@ void NetworkConnection::reportError()
 
 void NetworkConnection::parseRateLimit()
 {
-    foreach( const QByteArray &header, d->rply->rawHeaderList())
-    {
-        qDebug()<<"Header: "<<header<<" Value: "<<d->rply->rawHeader(header);
-    }
-
     if(d->rply->hasRawHeader("X-RateLimit-Limit")) {
         int limit = d->rply->rawHeader("X-RateLimit-Limit").toInt();
-
-        if(limit) emit rateMaxLimitChanged(limit);
+        if(d->m_rateMaxLimit != limit && limit) {
+            d->m_rateMaxLimit = limit;
+            emit rateMaxLimitChanged(limit);
+        }
     }
+
     if(d->rply->hasRawHeader("X-RateLimit-Remaining")) {
         int limit = d->rply->rawHeader("X-RateLimit-Remaining").toInt();
-
-        if(limit) emit rateLimitChanged(limit);
+        if(d->m_rateLimit != limit && limit) {
+            d->m_rateLimit = limit;
+            emit rateLimitChanged(limit);
+        }
     }
+
     if(d->rply->hasRawHeader("X-RateLimit-Reset")) {
         int limit = d->rply->rawHeader("X-RateLimit-Reset").toInt();
+        if(d->m_rateLimitReset != limit && limit) {
+            d->m_rateLimitReset = limit;
+            emit rateLimitResetMilsec(limit);
+        }
+    }
 
-        if(limit) emit rateLimitResetMilsec(limit);
+    if(d->rply->hasRawHeader("X-Poll-Interval")) {
+        int interval = d->rply->rawHeader("X-Poll-Interval").toInt();
+        if(d->m_pollInterval != interval) {
+            d->m_pollInterval = interval;
+            emit
+        }
     }
 }
 
@@ -115,4 +140,19 @@ void NetworkConnection::parseRateLimit()
 int NetworkConnection::id() const
 {
     return d->m_id;
+}
+
+int NetworkConnection::rateLimitReset() const
+{
+    return d->m_rateLimitReset;
+}
+
+int NetworkConnection::rateMaxLimit() const
+{
+    return d->m_rateMaxLimit;
+}
+
+int NetworkConnection::rateLimit() const
+{
+    return d->m_rateLimit;
 }

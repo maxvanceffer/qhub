@@ -4,6 +4,8 @@
 #include <QMutex>
 #include <QPointer>
 
+#include "qhub.h"
+
 static NetworkManager * m_instance = 0;
 
 class NetworkManager::Private
@@ -23,9 +25,9 @@ public:
 
 NetworkManager::NetworkManager():d(new Private)
 {
-    d->rateLimitLeft = 0;
-    d->rateMaxLimit  = 0;
-    d->rateResetTimeout = 0;
+    d->rateLimitLeft = 99999;
+    d->rateMaxLimit  = 99999;
+    d->rateResetTimeout = 999999999;
 
     d->m_manager = new QNetworkAccessManager(this);
     connect(d->m_manager,SIGNAL(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)),
@@ -62,6 +64,12 @@ int NetworkManager::get(const QUrl &url, QObject * object, const char *slot, con
 
     if(our_request.url().isEmpty())
         our_request.setUrl(url);
+
+    if(!d->user.isNull())
+    {
+        QByteArray credentials(QString("%1:%2").arg(d->user->username(),d->user->password()).toLatin1());
+        our_request.setRawHeader("Authorization","Basic "+credentials.toBase64());
+    }
 
     QNetworkReply * rply = d->m_manager->get(our_request);
 

@@ -60,7 +60,7 @@ Rectangle {
 
         Image {
             id: pngIcon
-            visible: !awasomeLabel.visible && pngIcon.source.length
+            visible: !awasomeLabel.visible
         }
 
         Label {

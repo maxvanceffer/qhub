@@ -6,6 +6,9 @@
 
 #include <QTimer>
 #include <QDateTime>
+#include <QMutex>
+
+static HubNotificationManager * m_instance = 0;
 
 class HubNotificationManager::Private
 {
@@ -17,6 +20,17 @@ public:
     QDateTime m_lastRequestTime;
     QString lastModifiedFormat;
 };
+
+HubNotificationManager *HubNotificationManager::instance()
+{
+    if(!m_instance) {
+        QMutex mutex;
+        mutex.lock();
+        m_instance = new HubNotificationManager();
+        mutex.unlock();
+    }
+    return m_instance;
+}
 
 int HubNotificationManager::interval() const
 {
@@ -50,7 +64,10 @@ void HubNotificationManager::poll()
     QString url = QHub::instance()->routings().value("notifications_url","");
 
     // TODO: Deside if we need stop polling timer also, on such error
-    if(url.isEmpty()) return;
+    if(url.isEmpty() || !QHub::instance()->authority()->isAuthorized()) {
+        qWarning()<<"No polling notifications, no url if defined";
+        return;
+    }
 
     if(!d->m_lastRequestTime.isValid())
         d->m_lastRequestTime = QDateTime::currentDateTime();
@@ -74,7 +91,8 @@ void HubNotificationManager::setAutoInterval(bool arg)
 
 void HubNotificationManager::startPolling()
 {
-    if(d->m_pollingTimer.isActive()) return;
+    const bool active = d->m_pollingTimer.isActive();
+    if(active) return;
 
     // Poll for first time, and run poling timer
     poll();
@@ -89,6 +107,7 @@ void HubNotificationManager::endPolling()
 
 void HubNotificationManager::pollingResponse(QByteArray data)
 {
+    qDebug()<<"Notifications response: "<<data;
 
     d->m_requestId = 0;
 }
@@ -106,6 +125,12 @@ HubNotificationManager::HubNotificationManager(QObject *parent) : QObject(parent
     connect(QHub::instance(),SIGNAL(userUnauthorized()),SLOT(endPolling()));
 
     connect(&d->m_pollingTimer,SIGNAL(timeout()),SLOT(poll()));
+
+    if(QHub::instance()->authority()->isAuthorized())
+    {
+        qDebug()<<"User already authorized start polling, now";
+        startPolling();
+    }
 }
 
 HubNotificationManager::~HubNotificationManager()

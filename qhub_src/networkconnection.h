@@ -11,6 +11,9 @@ class NetworkConnection : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int id READ id NOTIFY idChanged)
+    Q_PROPERTY(int rateLimit READ rateLimit NOTIFY rateLimitChanged)
+    Q_PROPERTY(int rateMaxLimit READ rateMaxLimit NOTIFY rateMaxLimitChanged)
+    Q_PROPERTY(int rateLimitReset READ rateLimitReset NOTIFY rateLimitResetChanged)
 public:
     NetworkConnection( QNetworkReply *, const char * slot, QObject * );
     ~NetworkConnection();
@@ -22,6 +25,27 @@ public:
      * @return
      */
     int id() const;
+
+    /**
+     * @brief rateLimitReset return rate limit if response header have them, or 0 in other cases.
+     * If connection has no response yet from server, then 0 will be returned.
+     *
+     * @return int
+     */
+    int rateLimitReset() const;
+
+    /**
+     * @brief rateMaxLimit maximum limit request per range of time
+     *
+     * @return int
+     */
+    int rateMaxLimit() const;
+
+    /**
+     * @brief rateLimit
+     * @return
+     */
+    int rateLimit() const;
 
 signals:
     void done();
@@ -66,6 +90,12 @@ signals:
      * @brief pollTimeoutChanged
      */
     void pollTimeoutChanged(int);
+
+    /**
+     * @brief rateLimitResetChanged will return number in milsec when request limit will be renewed to maximum rate limit
+     * @param arg
+     */
+    void rateLimitResetChanged(int arg);
 
 public slots:
     void finished();

@@ -23,7 +23,15 @@ SOURCES += qhub.cpp \
     hubrepo.cpp \
     hubissues.cpp \
     hubnotificationmanager.cpp \
-    hubnotification.cpp
+    hubnotification.cpp \
+    qjson/json_parser.cc \
+    qjson/json_scanner.cc \
+    qjson/json_scanner.cpp \
+    qjson/parser.cpp \
+    qjson/parserrunnable.cpp \
+    qjson/qobjecthelper.cpp \
+    qjson/serializer.cpp \
+    qjson/serializerrunnable.cpp
 
 HEADERS += qhub.h\
     qhub_global.h \
@@ -36,7 +44,21 @@ HEADERS += qhub.h\
     hubrepo.h \
     hubissues.h \
     hubnotificationmanager.h \
-    hubnotification.h
+    hubnotification.h \
+    qjson/FlexLexer.h \
+    qjson/json_parser.hh \
+    qjson/json_scanner.h \
+    qjson/location.hh \
+    qjson/parser_p.h \
+    qjson/parser.h \
+    qjson/parserrunnable.h \
+    qjson/position.hh \
+    qjson/qjson_debug.h \
+    qjson/qjson_export.h \
+    qjson/qobjecthelper.h \
+    qjson/serializer.h \
+    qjson/serializerrunnable.h \
+    qjson/stack.hh
 
 unix {
 copyCommand =
@@ -99,3 +121,7 @@ export(target.path)
 INSTALLS += target
 INCLUDEPATH += /home/
 #LIBS += -lssl -lcrypto
+
+DISTFILES += \
+    qjson/json_parser.yy \
+    qjson/json_scanner.yy

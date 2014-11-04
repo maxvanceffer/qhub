@@ -5,6 +5,7 @@
 
 #include "qhub.h"
 #include "networkmanager.h"
+#include "hubnotificationmanager.h"
 #include "jsonparser.h"
 
 static QHub * m_Instance = 0;
@@ -28,6 +29,8 @@ public:
 
 QHub::QHub():d(new Private)
 {
+    d->m_current = new HubAuthority(this,-1);
+
     // Update routes
     NetworkManager::instance()->get(QHubData::GitHubRoutesUrl,this,"onRoutesReceived");
 }
@@ -43,10 +46,8 @@ QHub *QHub::instance()
     if (!m_Instance)
     {
         mutex.lock();
-
         if (!m_Instance)
             m_Instance = new QHub;
-
         mutex.unlock();
     }
 

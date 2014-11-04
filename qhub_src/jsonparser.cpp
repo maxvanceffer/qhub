@@ -1,24 +1,14 @@
 #include "jsonparser.h"
 #include <QStringList>
 #include <QVariantMap>
+#include <QDebug>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 #include "qhub.h"
-
-#ifdef Q_OS_LINUX
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonObject>
-#endif
-
-#ifdef Q_OS_WIN
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonObject>
-#endif
-
-#ifdef Q_OS_QNX
-#include <bb/data/JsonDataAccess>
-#endif
+#include "qjson/parser.h"
+#include "qjson/serializer.h"
 
 QMap<QString,QString> initProfileMap()
 {
@@ -62,23 +52,31 @@ QString JsonParser::buildAuthJson(QStringList scope, QString note, QString note_
     map.insert("client_id",client_id);
     map.insert("client_secret",client_secret);
 
-    QJsonDocument doc;
-    QJsonObject object;
-    object.fromVariantMap(map);
-    doc.setObject(object.fromVariantMap(map));
+    QJson::Serializer serializer;
+    bool ok = false;
+    QByteArray json = serializer.serialize(map,&ok);
+    if(!ok) {
+        qWarning()<<"Can not create auth json";
+    }
 
-    return doc.toJson();
+    return json;
 }
 
 QHash<QString, QString> JsonParser::parseRouts(QByteArray json)
 {
-    QJsonDocument doc = QJsonDocument::fromJson(json);
+    QJson::Parser parser;
+    bool ok;
 
-    QJsonObject obj = doc.object();
     QHash<QString,QString> hash;
-    foreach( const QString &key, obj.keys())
+    QVariantMap data = parser.parse(json,&ok).toMap();
+    if(!ok) {
+        qWarning()<<"Error parse routing json";
+        return hash;
+    }
+
+    foreach( const QString &key, data.keys())
     {
-        hash.insert(key,obj.value(key).toString());
+        hash.insert(key,data.value(key).toString());
     }
 
     return hash;
@@ -86,12 +84,20 @@ QHash<QString, QString> JsonParser::parseRouts(QByteArray json)
 
 JsonResponse JsonParser::parseLoginResponse(QByteArray json)
 {
-    QJsonDocument doc = QJsonDocument::fromJson(json);
+    JsonResponse response;
+    QJson::Parser parser;
+    bool ok;
 
-    QJsonObject obj = doc.object();
-    QJsonObject app = obj.value("app").toObject();
-    QJsonArray  scope = obj.value("scopes").toArray();
+    QVariantMap obj = parser.parse(json,&ok).toMap();
+    if(!ok) {
+        qWarning()<<"Error parse login response";
+        response.setError(true);
+        response.setErrorMessage("Error parse json");
+        return response;
+    }
+
     HubAuthority * auth = QHub::instance()->authority();
+    QVariantMap app = obj.value("app").toMap();
 
     auth->setId(obj.value("id").toInt());
     auth->setAuthorityUrl(obj.value("url").toString());
@@ -103,32 +109,31 @@ JsonResponse JsonParser::parseLoginResponse(QByteArray json)
     auth->setNoteUrl(obj.value("note_url").toString());
     auth->setCreatedAt(QDateTime::fromString(obj.value("created_at").toString()));
     auth->setUpdatedAt(QDateTime::fromString(obj.value("updated_at").toString()));
+    auth->setScope(obj.value("scope").toStringList());
 
-    QStringList scp;
-    for( int i = 0; i < scope.count(); i++ )
-        scp << scope.at(i).toString();
-
-    JsonResponse response;
-    response.setError(false);
-    response.setErrorMessage("");
     return response;
 }
 
 JsonResponse JsonParser::parseProfileResponse(QByteArray json)
 {
-    QJsonDocument doc = QJsonDocument::fromJson(json);
+    JsonResponse response;
+    QJson::Parser parser;
+    bool ok;
 
-    QJsonObject obj = doc.object();
+    QVariantMap obj = parser.parse(json,&ok).toMap();
+    if(!ok) {
+        response.setError(true);
+        response.setErrorMessage("Error parse profile json response");
+        return response;
+    }
+
     HubUser * auth = QHub::instance()->authority()->profile();
 
     foreach( const QString &json_key, profile.keys()) {
-        QVariant value = obj.value(json_key).toVariant();
+        QVariant value = obj.value(json_key);
         auth->setProperty(profile.value(json_key).toLatin1(),value);
     }
 
-    JsonResponse response;
-    response.setError(false);
-    response.setErrorMessage("");
     return response;
 }
 
@@ -140,6 +145,8 @@ public:
 
 JsonResponse::JsonResponse():d(new Private)
 {
+    d->m_message = "";
+    d->m_error   = false;
 }
 
 bool JsonResponse::isError() const

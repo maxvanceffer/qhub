@@ -15,6 +15,11 @@ class HubNotificationManager : public QObject
     Q_PROPERTY(bool autoInterval READ autoInterval WRITE setAutoInterval NOTIFY autoIntervalChanged)
 public:
     /**
+     * Return instance of manager
+     */
+    static HubNotificationManager * instance();
+
+    /**
      * Interval in milsec how often check for notifications. By default it set to 1 minutes.
      *
      * @brief interval

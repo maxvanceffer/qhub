@@ -20,8 +20,16 @@ public:
      */
     QHash<QString,QString> routings() const;
 
+    /**
+     * @brief error
+     * @return
+     */
     QString error() const;
 
+    /**
+     * @brief authority
+     * @return
+     */
     HubAuthority * authority();
 
 signals:
