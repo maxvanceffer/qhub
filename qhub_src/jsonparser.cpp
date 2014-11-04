@@ -137,6 +137,24 @@ JsonResponse JsonParser::parseProfileResponse(QByteArray json)
     return response;
 }
 
+JsonResponse JsonParser::parseNotifications(QByteArray json)
+{
+    JsonResponse response;
+    QJson::Parser parser;
+    bool ok;
+
+    QVariantMap obj = parser.parse(json,&ok);
+    if(!ok) {
+        response.setError(true);
+        response.setErrorMessage("Error parse notification json response");
+        return response;
+    }
+
+
+
+    return response;
+}
+
 class JsonResponse::Private {
 public:
     bool m_error;
