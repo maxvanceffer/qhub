@@ -184,12 +184,13 @@ Rectangle {
         }
 
         DashboardGridItem {
-            id: issuesFlatIcon
+            id: notificationsFlatIcon
             color: '#2ecc71'
             footerColor: '#27ae60'
             footerBorderColor: '#209250'
             footerText: qsTr('Issues')
-            awasomeIcon: '\uf126'
+            awasomeIcon: "\uf086"
+            iconText: NOTIFICATIONS.count
             Layout.fillHeight: true
             Layout.fillWidth: true
         }

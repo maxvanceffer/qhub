@@ -19,8 +19,12 @@ Rectangle {
     property string footerBorderColor: 'white'
 
     // Size changes animation
-    property int normallSize: 100
+    property int normalWidth: 100
+    property int normalHeight: 100
     property int smallSize: 10
+
+    Behavior on width { SmoothedAnimation { velocity: 200 } }
+    Behavior on height { SmoothedAnimation { velocity: 200 } }
 
     states: [
         State {
@@ -28,15 +32,22 @@ Rectangle {
             PropertyChanges { target: root; height: smallSize; width: smallSize }
         },
         State {
-            name: "normall"
-            PropertyChanges { target: root; height: normallSize; width: normallSize }
+            name: "normal"
+            when: !mouseArea.containsMouse
+            PropertyChanges { target: root; height: normalHeight; width: normalWidth }
+        },
+        State {
+            name: "hover"
+            when: mouseArea.containsMouse
+            PropertyChanges { target: root; height: normalHeight + 20; width: normalWidth + 20 }
         }
+
     ]
 
-    transitions: Transition {
-        ParallelAnimation {
-            SmoothedAnimation { easing.type: Easing.InOutExpo; duration: 500; easing.amplitude: 2.0 }
-        }
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        hoverEnabled: true
     }
 
     RowLayout {

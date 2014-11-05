@@ -1,12 +1,14 @@
 #ifndef JSONPARSER_H
 #define JSONPARSER_H
 
+#include <QObject>
 #include <QString>
 #include <QHash>
 
 class JsonResponse;
-class JsonParser
+class JsonParser : public QObject
 {
+    Q_OBJECT
 public:
     JsonParser();
 

@@ -14,6 +14,9 @@ int main(int argc, char *argv[])
     qmlRegisterType<HubAuthority>("my.HubAuthority", 1, 0, "HubAuthority");
     qmlRegisterType<HubUser>("my.hubuser", 1, 0, "HubUser");
 
+    app.setApplicationDisplayName("GitHub Friend");
+    app.setApplicationName("GitHub Friend");
+
     QtQuick2ApplicationViewer viewer;
     viewer.rootContext()->setContextProperty("HUB",QHub::instance());
     viewer.rootContext()->setContextProperty("NOTIFICATIONS",HubNotificationManager::instance());

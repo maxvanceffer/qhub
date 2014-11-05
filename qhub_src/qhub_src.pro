@@ -31,7 +31,8 @@ SOURCES += qhub.cpp \
     qjson/parserrunnable.cpp \
     qjson/qobjecthelper.cpp \
     qjson/serializer.cpp \
-    qjson/serializerrunnable.cpp
+    qjson/serializerrunnable.cpp \
+    hubsubject.cpp
 
 HEADERS += qhub.h\
     qhub_global.h \
@@ -58,7 +59,8 @@ HEADERS += qhub.h\
     qjson/qobjecthelper.h \
     qjson/serializer.h \
     qjson/serializerrunnable.h \
-    qjson/stack.hh
+    qjson/stack.hh \
+    hubsubject.h
 
 unix {
 copyCommand =

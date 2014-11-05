@@ -7,6 +7,8 @@
 #include <QJsonArray>
 
 #include "qhub.h"
+#include "hubnotificationmanager.h"
+#include "hubnotification.h"
 #include "qjson/parser.h"
 #include "qjson/serializer.h"
 
@@ -143,14 +145,39 @@ JsonResponse JsonParser::parseNotifications(QByteArray json)
     QJson::Parser parser;
     bool ok;
 
-    QVariantMap obj = parser.parse(json,&ok);
+    QVariantList list = parser.parse(json,&ok).toList();
     if(!ok) {
         response.setError(true);
         response.setErrorMessage("Error parse notification json response");
         return response;
     }
 
+    QList<HubNotification*> notifications;
+    for( int i = 0; i < list.count(); i++ )
+    {
+        QVariantMap map = list.at(i).toMap();
+        HubNotification * note = new HubNotification(HubNotificationManager::instance());
+        HubSubject      * subj = new HubSubject(note);
 
+        note->setId(map.value("id").toInt());
+        note->setIsRead(!map.value("unread").toBool());
+        note->setReason(map.value("reason").toString());
+        note->setUpdatedAt(map.value("updated_at").toDateTime());
+        note->setReadedAt(map.value("last_read_at").toDateTime());
+        note->setSubscriptionUrl(map.value("subscription_url").toUrl());
+        note->setUrl(map.value("url").toUrl());
+
+        QVariantMap subjMap = map.value("subject").toMap();
+        subj->setTitle(subjMap.value("title").toString());
+        subj->setUrl(subjMap.value("url").toString());
+        subj->setLatesCommentUrl(subjMap.value("latest_comment_url").toUrl());
+        subj->setType(subjMap.value("type").toString());
+
+        note->setSubject(subj);
+        notifications << note;
+    }
+
+    HubNotificationManager::instance()->updateNotifications(notifications);
 
     return response;
 }

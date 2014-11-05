@@ -1,7 +1,11 @@
 #ifndef HUBNOTIFICATIONMANAGER_H
 #define HUBNOTIFICATIONMANAGER_H
 
+// Qt's includes
 #include <QObject>
+
+// Hub lib's includes
+#include "hubnotification.h"
 
 /**
  * @brief The HubNotificationManager class used for polling GitHub for new notifications, in given interval
@@ -77,6 +81,8 @@ public slots:
     void setAutoInterval(bool arg);
 
 private slots:
+    friend class JsonParser;
+
     /**
      * @brief startPolling
      */
@@ -93,6 +99,11 @@ private slots:
      * @brief pollingResponse
      */
     void pollingResponse(QByteArray);
+
+    /**
+     * @brief updateNotifications
+     */
+    void updateNotifications(QList<HubNotification*>);
 
 private:
     explicit HubNotificationManager(QObject *parent = 0);

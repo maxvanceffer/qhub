@@ -19,6 +19,7 @@ public:
     QTimer m_pollingTimer;
     QDateTime m_lastRequestTime;
     QString lastModifiedFormat;
+    QList<HubNotification*> m_notifications;
 };
 
 HubNotificationManager *HubNotificationManager::instance()
@@ -102,14 +103,18 @@ void HubNotificationManager::startPolling()
 
 void HubNotificationManager::endPolling()
 {
-
+    d->m_pollingTimer.stop();
 }
 
 void HubNotificationManager::pollingResponse(QByteArray data)
 {
     qDebug()<<"Notifications response: "<<data;
-
     d->m_requestId = 0;
+
+    JsonResponse response = JsonParser::parseNotifications(data);
+    if(response.isError()) {
+        qWarning()<<"Error parse notifications: "<<response.error();
+    }
 }
 
 HubNotificationManager::HubNotificationManager(QObject *parent) : QObject(parent), d(new Private)
@@ -135,8 +140,19 @@ HubNotificationManager::HubNotificationManager(QObject *parent) : QObject(parent
 
 HubNotificationManager::~HubNotificationManager()
 {
-
+    delete d;
 }
 
+void HubNotificationManager::updateNotifications(QList<HubNotification *> list)
+{
+    qDebug()<<"Parser extracted "<<list.count()<<" notifications";
+    qDeleteAll(d->m_notifications.begin(),d->m_notifications.end());
+    d->m_notifications.clear();
+    d->m_notifications = list;
+    d->m_count = 0;
+    foreach( HubNotification * note, d->m_notifications )
+        if(!note->isRead()) d->m_count++;
 
-
+    qDebug()<<"Notify somebody about count change "<<d->m_count;
+    emit countChanged(d->m_count);
+}
