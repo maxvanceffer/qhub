@@ -20,7 +20,6 @@ SOURCES += qhub.cpp \
     appinfo.cpp \
     hubauthority.cpp \
     hubuser.cpp \
-    hubrepo.cpp \
     hubissues.cpp \
     hubnotificationmanager.cpp \
     hubnotification.cpp \
@@ -32,7 +31,8 @@ SOURCES += qhub.cpp \
     qjson/qobjecthelper.cpp \
     qjson/serializer.cpp \
     qjson/serializerrunnable.cpp \
-    hubsubject.cpp
+    hubsubject.cpp \
+    hubrepository.cpp
 
 HEADERS += qhub.h\
     qhub_global.h \
@@ -42,7 +42,6 @@ HEADERS += qhub.h\
     appinfo.h \
     hubauthority.h \
     hubuser.h \
-    hubrepo.h \
     hubissues.h \
     hubnotificationmanager.h \
     hubnotification.h \
@@ -60,7 +59,8 @@ HEADERS += qhub.h\
     qjson/serializer.h \
     qjson/serializerrunnable.h \
     qjson/stack.hh \
-    hubsubject.h
+    hubsubject.h \
+    hubrepository.h
 
 unix {
 copyCommand =

@@ -11,6 +11,7 @@ public:
     QDateTime m_updatedAt;
     QDateTime m_readedAt;
     QPointer<HubSubject> m_subject;
+    QPointer<HubRepository> m_repository;
     QString m_type;
     QUrl m_url;
     QUrl m_subscriptionUrl;
@@ -70,6 +71,11 @@ QUrl HubNotification::url() const
 QUrl HubNotification::subscriptionUrl() const
 {
     return d->m_subscriptionUrl;
+}
+
+HubRepository *HubNotification::repository() const
+{
+    return d->m_repository;
 }
 
 void HubNotification::setId(int arg)
@@ -152,6 +158,16 @@ void HubNotification::setSubscriptionUrl(QUrl arg)
 
     d->m_subscriptionUrl = arg;
     emit subscriptionUrlChanged(arg);
+}
+
+void HubNotification::setRepository(HubRepository *arg)
+{
+    if (d->m_repository == arg || !arg)
+        return;
+
+    d->m_repository = arg;
+    d->m_repository->setParent(this);
+    emit repositoryChanged(arg);
 }
 
 

@@ -16,6 +16,7 @@ public:
     int m_count;
     int m_requestId;
     bool m_autoInterval;
+    bool m_pollLastStatus;
     QTimer m_pollingTimer;
     QDateTime m_lastRequestTime;
     QString lastModifiedFormat;
@@ -98,17 +99,18 @@ void HubNotificationManager::startPolling()
     // Poll for first time, and run poling timer
     poll();
 
+    d->m_pollLastStatus = true;
     d->m_pollingTimer.start();
 }
 
 void HubNotificationManager::endPolling()
 {
     d->m_pollingTimer.stop();
+    d->m_pollLastStatus = false;
 }
 
 void HubNotificationManager::pollingResponse(QByteArray data)
 {
-    qDebug()<<"Notifications response: "<<data;
     d->m_requestId = 0;
 
     JsonResponse response = JsonParser::parseNotifications(data);
@@ -122,14 +124,17 @@ HubNotificationManager::HubNotificationManager(QObject *parent) : QObject(parent
     d->m_count    = 0;
     d->m_autoInterval = true;
     d->m_requestId = 0;
+    d->m_pollLastStatus = false;
     d->m_pollingTimer.setInterval(60000);
 
     // Last-Modified: Tue, 15 Nov 1994 12:45:26 GMT
 
     connect(QHub::instance(),SIGNAL(userAuthorized()),SLOT(startPolling()));
     connect(QHub::instance(),SIGNAL(userUnauthorized()),SLOT(endPolling()));
-
     connect(&d->m_pollingTimer,SIGNAL(timeout()),SLOT(poll()));
+
+    connect(NetworkManager::instance(),SIGNAL(maximumRateLimitExceededChanged(bool)),SLOT(rateLimitChanged(bool)));
+    connect(NetworkManager::instance(),SIGNAL(pollTimeoutChanged(int)),SLOT(syncPollTimeout(int)));
 
     if(QHub::instance()->authority()->isAuthorized())
     {
@@ -155,4 +160,29 @@ void HubNotificationManager::updateNotifications(QList<HubNotification *> list)
 
     qDebug()<<"Notify somebody about count change "<<d->m_count;
     emit countChanged(d->m_count);
+}
+
+void HubNotificationManager::rateLimitChanged(bool state)
+{
+    if(!state && d->m_pollingTimer.isActive())
+    {
+        d->m_pollingTimer.stop();
+    }
+    else if(state && !d->m_pollingTimer.isActive() && d->m_pollLastStatus)
+    {
+        d->m_pollingTimer.start();
+    }
+}
+
+void HubNotificationManager::syncPollTimeout(int timeout)
+{
+    qDebug()<<"Say that sync timeout must be "<<timeout<<" sec";
+    int milsec = timeout * 1000;
+    if(d->m_autoInterval && milsec != d->m_pollingTimer.interval())
+    {
+        qDebug()<<"GitHub suggest "<<milsec<<" for updating notifications, apply new interval";
+        d->m_pollingTimer.stop();
+        d->m_pollingTimer.setInterval(milsec);
+        d->m_pollingTimer.start();
+    }
 }

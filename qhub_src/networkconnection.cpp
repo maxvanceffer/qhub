@@ -131,7 +131,7 @@ void NetworkConnection::parseRateLimit()
         int interval = d->rply->rawHeader("X-Poll-Interval").toInt();
         if(d->m_pollInterval != interval) {
             d->m_pollInterval = interval;
-            emit
+            emit pollTimeoutChanged(d->m_pollInterval);
         }
     }
 }

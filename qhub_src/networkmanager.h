@@ -19,6 +19,7 @@ class NetworkManager : public QObject
     Q_OBJECT
     Q_PROPERTY(QDateTime rateLimitResetTimeout READ rateLimitResetTimeout NOTIFY rateLimitResetTimeoutChanged)
     Q_PROPERTY(bool isMaximumRateLimitExceeded READ isMaximumRateLimitExceeded NOTIFY maximumRateLimitExceededChanged)
+    Q_PROPERTY(int pollTimeout READ pollTimeout NOTIFY pollTimeoutChanged)
 public:
     static NetworkManager * instance();
     /**
@@ -73,12 +74,16 @@ public:
 
     bool isMaximumRateLimitExceeded() const;
 
+    int pollTimeout() const;
+
 signals:
     void networkAccessEnabled(bool);
 
     void rateLimitResetTimeoutChanged(QDateTime arg);
 
     void maximumRateLimitExceededChanged(bool arg);
+
+    void pollTimeoutChanged(int arg);
 
 public slots:
     void setAuthority(HubAuthority *);
@@ -110,6 +115,8 @@ private slots:
 
     void rateTimoutLimitChanged(int);
 
+    void setPollTimeout(int);
+
 private:
     /**
      * @brief NetworkManager
@@ -128,6 +135,9 @@ private:
      */
     NetworkManager& operator = ( const NetworkManager &other );
 
+    /**
+     * PIMPL
+     */
     class Private;
     Private * const d;
 };

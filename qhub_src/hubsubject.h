@@ -3,10 +3,10 @@
 
 // Qt's includes
 #include <QObject>
-
-// Hub lin includes
 #include <QUrl>
 #include <QString>
+
+// Hub lin includes
 
 /**
  * @brief The HubSubject class representd part of GitHub api response

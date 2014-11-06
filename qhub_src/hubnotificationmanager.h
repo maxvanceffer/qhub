@@ -105,6 +105,16 @@ private slots:
      */
     void updateNotifications(QList<HubNotification*>);
 
+    /**
+     * @brief rateLimitChanged
+     */
+    void rateLimitChanged(bool);
+
+    /**
+     * @brief syncPollTimeout
+     */
+    void syncPollTimeout(int);
+
 private:
     explicit HubNotificationManager(QObject *parent = 0);
 

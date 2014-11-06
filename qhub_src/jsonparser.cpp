@@ -41,6 +41,16 @@ QMap<QString,QString> initProfileMap()
 
 static QMap<QString,QString> profile = initProfileMap();
 
+void fillHubUser(HubUser * user, QVariantMap data)
+{
+    const QStringList dataKeys = data.keys();
+    foreach( const QString &key, profile.keys()) {
+        if(!dataKeys.contains(key)) continue;
+        // Call set property mapped by key in json to property name of QObject
+        user->setProperty(profile.value(key).toLatin1(),data.value(key));
+    }
+}
+
 JsonParser::JsonParser()
 {
 }
@@ -156,8 +166,10 @@ JsonResponse JsonParser::parseNotifications(QByteArray json)
     for( int i = 0; i < list.count(); i++ )
     {
         QVariantMap map = list.at(i).toMap();
-        HubNotification * note = new HubNotification(HubNotificationManager::instance());
-        HubSubject      * subj = new HubSubject(note);
+        HubNotification * note  = new HubNotification(HubNotificationManager::instance());
+        HubSubject      * subj  = new HubSubject(note);
+        HubRepository   * repo  = new HubRepository(note);
+        HubUser         * owner = new HubUser(repo);
 
         note->setId(map.value("id").toInt());
         note->setIsRead(!map.value("unread").toBool());
@@ -173,6 +185,21 @@ JsonResponse JsonParser::parseNotifications(QByteArray json)
         subj->setLatesCommentUrl(subjMap.value("latest_comment_url").toUrl());
         subj->setType(subjMap.value("type").toString());
 
+        QVariantMap repoMap = map.value("repository").toMap();
+        repo->setId(repoMap.value("id").toInt());
+        repo->setName(repoMap.value("name").toString());
+        repo->setFullName(repoMap.value("full_name").toString());
+        repo->setDescription(repoMap.value("description").toString());
+        repo->setIsFork(repoMap.value("fork").toBool());
+        repo->setIsPrivate(repoMap.value("private").toBool());
+        repo->setHtmlUrl(repoMap.value("html_url").toUrl());
+        repo->setUrl(repoMap.value("url").toUrl());
+
+        QVariantMap ownerMap = repoMap.value("owner").toMap();
+        fillHubUser(owner,ownerMap);
+
+        repo->setOwner(owner);
+        note->setRepository(repo);
         note->setSubject(subj);
         notifications << note;
     }

@@ -8,6 +8,7 @@
 
 // Hub library includes
 #include "hubsubject.h"
+#include "hubrepository.h"
 
 class HubNotification : public QObject
 {
@@ -18,6 +19,7 @@ class HubNotification : public QObject
     Q_PROPERTY(QDateTime updatedAt READ updatedAt WRITE setUpdatedAt NOTIFY updatedAtChanged)
     Q_PROPERTY(QDateTime readedAt READ readedAt WRITE setReadedAt NOTIFY readedAtChanged)
     Q_PROPERTY(HubSubject * subject READ subject WRITE setSubject NOTIFY subjectChanged)
+    Q_PROPERTY(HubRepository * repository READ repository WRITE setRepository NOTIFY repositoryChanged)
     Q_PROPERTY(QString type READ type WRITE setType NOTIFY typeChanged)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(QUrl subscriptionUrl READ subscriptionUrl WRITE setSubscriptionUrl NOTIFY subscriptionUrlChanged)
@@ -81,6 +83,12 @@ public:
      */
     QUrl subscriptionUrl() const;
 
+    /**
+     * @brief repository of this notification
+     * @return HubRepository
+     */
+    HubRepository * repository() const;
+
 signals:
     void idChanged(int arg);
     void IsReadChanged(bool arg);
@@ -91,6 +99,7 @@ signals:
     void typeChanged(QString arg);
     void urlChanged(QUrl arg);
     void subscriptionUrlChanged(QUrl arg);
+    void repositoryChanged(HubRepository * arg);
 
 public slots:
     void setId(int arg);
@@ -102,6 +111,7 @@ public slots:
     void setType(QString arg);
     void setUrl(QUrl arg);
     void setSubscriptionUrl(QUrl arg);
+    void setRepository(HubRepository * arg);
 
 private:
     class Private;

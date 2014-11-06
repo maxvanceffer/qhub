@@ -19,7 +19,7 @@ public:
 
     QList<NetworkConnection*> connections;
     QPointer<HubAuthority> user;
-    int rateMaxLimit, rateLimitLeft, rateResetTimeout;
+    int rateMaxLimit, rateLimitLeft, rateResetTimeout, m_pollTimeout;
 };
 
 
@@ -28,6 +28,7 @@ NetworkManager::NetworkManager():d(new Private)
     d->rateLimitLeft = 99999;
     d->rateMaxLimit  = 99999;
     d->rateResetTimeout = 999999999;
+    d->m_pollTimeout    = 999999999;
 
     d->m_manager = new QNetworkAccessManager(this);
     connect(d->m_manager,SIGNAL(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)),
@@ -148,6 +149,11 @@ bool NetworkManager::isMaximumRateLimitExceeded() const
     return d->rateLimitLeft ? false : true;
 }
 
+int NetworkManager::pollTimeout() const
+{
+    return d->m_pollTimeout;
+}
+
 void NetworkManager::setAuthority(HubAuthority * auth)
 {
     d->user = auth;
@@ -188,7 +194,7 @@ void NetworkManager::makeDefaultConnections(NetworkConnection *connection)
     connect(connection,SIGNAL(rateLimitChanged(int)),SLOT(rateLimitChanged(int)));
     connect(connection,SIGNAL(rateMaxLimitChanged(int)),SLOT(rateMaxLimitChanged(int)));
     connect(connection,SIGNAL(rateLimitResetMilsec(int)),SLOT(rateTimoutLimitChanged(int)));
-
+    connect(connection,SIGNAL(pollTimeoutChanged(int)),SLOT(setPollTimeout(int)));
     connect(connection,SIGNAL(done()),connection,SLOT(deleteLater()));
     connect(connection,SIGNAL(done()),SLOT(connectionDone()));
 }
@@ -221,5 +227,13 @@ void NetworkManager::rateTimoutLimitChanged(int value)
     if(d->rateResetTimeout != value) {
         d->rateResetTimeout = value;
         emit rateLimitResetTimeoutChanged(rateLimitResetTimeout());
+    }
+}
+
+void NetworkManager::setPollTimeout(int arg)
+{
+    if(d->m_pollTimeout != arg) {
+        d->m_pollTimeout = arg;
+        emit pollTimeoutChanged(arg);
     }
 }
