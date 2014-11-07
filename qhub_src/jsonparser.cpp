@@ -2,15 +2,14 @@
 #include <QStringList>
 #include <QVariantMap>
 #include <QDebug>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
 
 #include "qhub.h"
 #include "hubnotificationmanager.h"
 #include "hubnotification.h"
+
 #include "qjson/parser.h"
 #include "qjson/serializer.h"
+#include "qjson/qobjecthelper.h"
 
 QMap<QString,QString> initProfileMap()
 {
@@ -207,6 +206,14 @@ JsonResponse JsonParser::parseNotifications(QByteArray json)
     HubNotificationManager::instance()->updateNotifications(notifications);
 
     return response;
+}
+
+QByteArray JsonParser::objectToJson(QObject * obj, QStringList ignoreProperties)
+{
+    ignoreProperties << "objectName";
+    QVariantMap mapped = QJson::QObjectHelper::qobject2qvariant(obj,ignoreProperties);
+    QJson::Serializer serializer;
+    return serializer.serialize(mapped);
 }
 
 class JsonResponse::Private {

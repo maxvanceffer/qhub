@@ -126,13 +126,17 @@ void QHub::onRoutesReceived(QByteArray data)
 
 void QHub::onLoginResponse(QByteArray data)
 {
-    qDebug()<<"Login response "<<data;
     JsonResponse response = JsonParser::parseLoginResponse(data);
-    if(!response.isError()) {
+    if(!response.isError() && !d->m_current->token().isEmpty()) {
         qDebug()<<"Logged in, with token: "<<d->m_current->token();
     }
-    else {
+
+    if(d->m_current->token().isEmpty()) {
         qDebug()<<"Not logged in, error: "<<response.error();
+        d->m_current->deleteLater();
+        d->m_current = new HubAuthority(this);
+        emit userFailedAuthorize();
+        return;
     }
 
     emit authorityChanged(d->m_current);
@@ -144,14 +148,10 @@ void QHub::onLoginResponse(QByteArray data)
 
 void QHub::onUserResponse(QByteArray data)
 {
-    qDebug()<<"User response "<<data;
     JsonResponse response = JsonParser::parseProfileResponse(data);
     if(response.isError()) {
-        qDebug()<<"Faile get profile data";
+        qWarning()<<"Faile get profile data";
+        return;
     }
-    else {
-        qDebug()<<"Profile data recived with avatar url "<<this->d->m_current->profile()->avatar();
-    }
-
     emit userProfileUpdated();
 }

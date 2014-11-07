@@ -49,6 +49,15 @@ bool HubNotificationManager::autoInterval() const
     return d->m_autoInterval;
 }
 
+QList<QObject *> HubNotificationManager::notifications() const
+{
+    QList<QObject*> objects;
+    foreach( HubNotification * n, d->m_notifications)
+        objects << n;
+
+    return objects;
+}
+
 void HubNotificationManager::setInterval(int arg)
 {
     if (d->m_pollingTimer.interval() == arg)
@@ -91,6 +100,26 @@ void HubNotificationManager::setAutoInterval(bool arg)
     emit autoIntervalChanged(arg);
 }
 
+void HubNotificationManager::markAllAsRead()
+{
+    QUrl url = QHub::instance()->routings().value("notifications_url");
+    NetworkManager::instance()->put(url,QByteArray(),this,"onMarkResponse");
+}
+
+void HubNotificationManager::markAsRead(HubNotification * note)
+{
+    QStringList ignPr = QStringList()<<"subject"<<"repository";
+    QByteArray json = JsonParser::objectToJson(note,ignPr);
+    qDebug()<<"Notification json: "<<json;
+
+    QString prepareUrl = "https://api.github.com/repos/:owner/:repo/notifications";
+    prepareUrl.replace(":owner",note->repository()->owner()->login());
+    prepareUrl.replace(":repo",note->repository()->name());
+
+    QUrl url = QUrl(prepareUrl);
+    NetworkManager::instance()->put(url,json,this,"onMarkResponse");
+}
+
 void HubNotificationManager::startPolling()
 {
     const bool active = d->m_pollingTimer.isActive();
@@ -113,6 +142,7 @@ void HubNotificationManager::pollingResponse(QByteArray data)
 {
     d->m_requestId = 0;
 
+//    qDebug()<<"Poll response "<<data;
     JsonResponse response = JsonParser::parseNotifications(data);
     if(response.isError()) {
         qWarning()<<"Error parse notifications: "<<response.error();
@@ -150,16 +180,17 @@ HubNotificationManager::~HubNotificationManager()
 
 void HubNotificationManager::updateNotifications(QList<HubNotification *> list)
 {
-    qDebug()<<"Parser extracted "<<list.count()<<" notifications";
+    // Remove other
     qDeleteAll(d->m_notifications.begin(),d->m_notifications.end());
+
     d->m_notifications.clear();
     d->m_notifications = list;
     d->m_count = 0;
     foreach( HubNotification * note, d->m_notifications )
         if(!note->isRead()) d->m_count++;
 
-    qDebug()<<"Notify somebody about count change "<<d->m_count;
     emit countChanged(d->m_count);
+    emit notificationsChanged(notifications());
 }
 
 void HubNotificationManager::rateLimitChanged(bool state)
@@ -185,4 +216,9 @@ void HubNotificationManager::syncPollTimeout(int timeout)
         d->m_pollingTimer.setInterval(milsec);
         d->m_pollingTimer.start();
     }
+}
+
+void HubNotificationManager::onMarkResponse(QByteArray json)
+{
+    qDebug()<<"Mark response "<<json;
 }

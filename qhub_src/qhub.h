@@ -34,6 +34,7 @@ public:
 
 signals:
     void userChanged(HubAuthority *);
+    void userFailedAuthorize();
     void userAuthorized();
     void userUnauthorized();
     void userProfileUpdated();

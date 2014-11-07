@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QHash>
 
 class JsonResponse;
@@ -21,6 +22,8 @@ public:
     static JsonResponse parseProfileResponse(QByteArray);
 
     static JsonResponse parseNotifications(QByteArray);
+
+    static QByteArray objectToJson(QObject * , QStringList ignoreProperties = QStringList());
 };
 
 class JsonResponse {

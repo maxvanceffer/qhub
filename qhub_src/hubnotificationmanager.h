@@ -17,6 +17,7 @@ class HubNotificationManager : public QObject
     Q_PROPERTY(int interval READ interval WRITE setInterval NOTIFY intervalChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(bool autoInterval READ autoInterval WRITE setAutoInterval NOTIFY autoIntervalChanged)
+    Q_PROPERTY(QList<QObject*> notifications READ notifications NOTIFY notificationsChanged)
 public:
     /**
      * Return instance of manager
@@ -39,7 +40,17 @@ public:
      */
     int count() const;
 
+    /**
+     * @brief autoInterval
+     * @return
+     */
     bool autoInterval() const;
+
+    /**
+     * @brief notifications
+     * @return
+     */
+    QList<QObject *> notifications() const;
 
 signals:
     /**
@@ -60,6 +71,12 @@ signals:
      */
     void autoIntervalChanged(bool arg);
 
+    /**
+     * @brief notificationsChanged
+     * @param arg
+     */
+    void notificationsChanged(QList<QObject*> arg);
+
 public slots:
     /**
      * @brief setInterval
@@ -79,6 +96,17 @@ public slots:
      * @param arg
      */
     void setAutoInterval(bool arg);
+
+    /**
+     * @brief markAllAsRead mark all notifications as readed.
+     * @note  All notifications will be removed, on success request.
+     */
+    void markAllAsRead();
+
+    /**
+     * @brief markAsRead mark exact notification as read
+     */
+    void markAsRead( HubNotification * );
 
 private slots:
     friend class JsonParser;
@@ -114,6 +142,11 @@ private slots:
      * @brief syncPollTimeout
      */
     void syncPollTimeout(int);
+
+    /**
+     * @brief onMarkResponse
+     */
+    void onMarkResponse(QByteArray);
 
 private:
     explicit HubNotificationManager(QObject *parent = 0);

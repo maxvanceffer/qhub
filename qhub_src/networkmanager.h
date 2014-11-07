@@ -53,6 +53,17 @@ public:
     int post(const QUrl &url, QByteArray data, QObject * object, const char * slot);
 
     /**
+     * @brief put make request with type put
+     * @param url where to make request
+     * @param data to put in content body
+     * @param object to call slot on response
+     * @param slot
+     * @param request
+     * @return
+     */
+    int put(const QUrl &url, const QByteArray &data, QObject * object, const char * slot, const QNetworkRequest &request = QNetworkRequest());
+
+    /**
      * @brief hasNetwork
      * @return
      */

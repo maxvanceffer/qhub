@@ -18,6 +18,8 @@ Rectangle {
         currentDashboardIcon.source = url
     }
 
+    signal showNotification();
+
     Connections {
         target: routerView
         onCurrentItemChanged: {
@@ -188,11 +190,12 @@ Rectangle {
             color: '#2ecc71'
             footerColor: '#27ae60'
             footerBorderColor: '#209250'
-            footerText: qsTr('Issues')
+            footerText: qsTr('Notifications')
             awasomeIcon: "\uf086"
             iconText: NOTIFICATIONS.count
             Layout.fillHeight: true
             Layout.fillWidth: true
+            onClicked: root.showNotification()
         }
 
         DashboardGridItem {

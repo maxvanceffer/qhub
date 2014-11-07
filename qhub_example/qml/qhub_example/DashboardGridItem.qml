@@ -23,6 +23,8 @@ Rectangle {
     property int normalHeight: 100
     property int smallSize: 10
 
+    signal clicked();
+
     Behavior on width { SmoothedAnimation { velocity: 200 } }
     Behavior on height { SmoothedAnimation { velocity: 200 } }
 
@@ -48,6 +50,7 @@ Rectangle {
         id: mouseArea
         anchors.fill: parent
         hoverEnabled: true
+        onClicked: root.clicked()
     }
 
     RowLayout {

@@ -34,10 +34,17 @@ Rectangle {
 
     DashboardPage {
         id: dashboardPage
+        onShowNotification: {
+             routerView.push(notificationsPage);
+        }
     }
 
     ProfilePage {
         id: profilePage
+    }
+
+    NotificationsPage {
+        id: notificationsPage
     }
 
     StackView {

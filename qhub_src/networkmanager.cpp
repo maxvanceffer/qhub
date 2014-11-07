@@ -132,6 +132,32 @@ int NetworkManager::post(const QUrl &url, QByteArray data, QObject *object, cons
     return connection->id();
 }
 
+int NetworkManager::put(const QUrl &url, const QByteArray &data, QObject *object, const char *slot, const QNetworkRequest &request)
+{
+    if(isMaximumRateLimitExceeded()) {
+        qWarning()<<"Maxim rate limit exceeded";
+        return 0;
+    }
+
+    QNetworkRequest p_request = request;
+    p_request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    if(p_request.url().isEmpty()) {
+        p_request.setUrl(url);
+    }
+
+    if(!d->user.isNull())
+    {
+        QByteArray credentials(QString("%1:%2").arg(d->user->username(),d->user->password()).toLatin1());
+        p_request.setRawHeader("Authorization","Basic "+credentials.toBase64());
+    }
+
+    QNetworkReply * rply = d->m_manager->put(p_request,data);
+    NetworkConnection * connection = new NetworkConnection(rply,slot,object);
+    makeDefaultConnections(connection);
+    return connection->id();
+}
+
 bool NetworkManager::hasNetwork() const
 {
     return d->hasNetwork;
@@ -195,7 +221,6 @@ void NetworkManager::makeDefaultConnections(NetworkConnection *connection)
     connect(connection,SIGNAL(rateMaxLimitChanged(int)),SLOT(rateMaxLimitChanged(int)));
     connect(connection,SIGNAL(rateLimitResetMilsec(int)),SLOT(rateTimoutLimitChanged(int)));
     connect(connection,SIGNAL(pollTimeoutChanged(int)),SLOT(setPollTimeout(int)));
-    connect(connection,SIGNAL(done()),connection,SLOT(deleteLater()));
     connect(connection,SIGNAL(done()),SLOT(connectionDone()));
 }
 
@@ -210,7 +235,7 @@ void NetworkManager::rateLimitChanged(int value)
     // Check if really changed
     if(d->rateLimitLeft != value) {
         d->rateLimitLeft = value;
-        emit rateLimitChanged(value);
+//        emit rateLimitChanged(value);
     }
 }
 

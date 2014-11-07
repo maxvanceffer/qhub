@@ -12,6 +12,9 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     qmlRegisterType<HubAuthority>("my.HubAuthority", 1, 0, "HubAuthority");
+    qmlRegisterType<HubSubject>("my.HubSubject", 1, 0, "HubSubject");
+    qmlRegisterType<HubRepository>("my.HubRepository", 1, 0, "HubRepository");
+    qmlRegisterType<HubNotification>("my.HubNotification", 1, 0, "HubNotification");
     qmlRegisterType<HubUser>("my.hubuser", 1, 0, "HubUser");
 
     app.setApplicationDisplayName("GitHub Friend");
