@@ -50,7 +50,7 @@ Rectangle {
         visible: !checked
         onCheckedChanged: {
             if(checked) {
-                NOTIFICATIONS.markAsRead(model.modelData);
+                NOTIFICATIONS.markThreadAsRead(model.modelData);
             }
         }
     }

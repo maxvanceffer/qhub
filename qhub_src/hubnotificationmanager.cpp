@@ -106,15 +106,14 @@ void HubNotificationManager::markAllAsRead()
     NetworkManager::instance()->put(url,QByteArray(),this,"onMarkResponse");
 }
 
-void HubNotificationManager::markAsRead(HubNotification * note)
+void HubNotificationManager::markThreadAsRead(HubNotification * note)
 {
     QStringList ignPr = QStringList()<<"subject"<<"repository";
     QByteArray json = JsonParser::objectToJson(note,ignPr);
     qDebug()<<"Notification json: "<<json;
 
-    QString prepareUrl = "https://api.github.com/repos/:owner/:repo/notifications";
-    prepareUrl.replace(":owner",note->repository()->owner()->login());
-    prepareUrl.replace(":repo",note->repository()->name());
+    QString prepareUrl = "https://api.github.com/notifications/threads/:id";
+    prepareUrl.replace(":id",QString::number(note->id()));
 
     QUrl url = QUrl(prepareUrl);
     NetworkManager::instance()->put(url,json,this,"onMarkResponse");

@@ -7,8 +7,20 @@
 #include "../qhub_src/qhub.h"
 #include "../qhub_src/hubnotificationmanager.h"
 
+#include <iostream>       // std::cerr
+#include <exception>      // std::set_terminate
+#include <cstdlib>
+
+void myterminate () {
+  std::cerr << "terminate handler called\n";
+  std::cerr << "Count objects " << HubNotification::debugObjectsCount();
+  std::cerr << HubNotification::debugObjectsCount();
+  abort();  // forces abnormal termination
+}
+
 int main(int argc, char *argv[])
 {
+    std::set_terminate (myterminate);
     QGuiApplication app(argc, argv);
 
     qmlRegisterType<HubAuthority>("my.HubAuthority", 1, 0, "HubAuthority");

@@ -1,6 +1,9 @@
 #include "hubnotification.h"
 
 #include <QPointer>
+#include <QDebug>
+
+static int countObj = 0;
 
 class HubNotification::Private
 {
@@ -21,10 +24,12 @@ HubNotification::HubNotification(QObject *parent) : QObject(parent),d(new Privat
 {
     d->m_id = 0;
     d->m_IsRead = false;
+    countObj++;
 }
 
 HubNotification::~HubNotification()
 {
+    countObj--;
     delete d;
 }
 
@@ -76,6 +81,11 @@ QUrl HubNotification::subscriptionUrl() const
 HubRepository *HubNotification::repository() const
 {
     return d->m_repository;
+}
+
+int HubNotification::debugObjectsCount()
+{
+    return countObj;
 }
 
 void HubNotification::setId(int arg)

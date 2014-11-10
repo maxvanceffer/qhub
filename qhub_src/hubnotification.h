@@ -89,6 +89,8 @@ public:
      */
     HubRepository * repository() const;
 
+    static int debugObjectsCount();
+
 signals:
     void idChanged(int arg);
     void IsReadChanged(bool arg);

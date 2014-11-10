@@ -32,7 +32,9 @@ SOURCES += qhub.cpp \
     qjson/serializer.cpp \
     qjson/serializerrunnable.cpp \
     hubsubject.cpp \
-    hubrepository.cpp
+    hubrepository.cpp \
+    hubgistsmanager.cpp \
+    hubgist.cpp
 
 HEADERS += qhub.h\
     qhub_global.h \
@@ -60,7 +62,9 @@ HEADERS += qhub.h\
     qjson/serializerrunnable.h \
     qjson/stack.hh \
     hubsubject.h \
-    hubrepository.h
+    hubrepository.h \
+    hubgistsmanager.h \
+    hubgist.h
 
 unix {
 copyCommand =

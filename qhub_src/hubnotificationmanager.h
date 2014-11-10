@@ -106,7 +106,7 @@ public slots:
     /**
      * @brief markAsRead mark exact notification as read
      */
-    void markAsRead( HubNotification * );
+    void markThreadAsRead( HubNotification * );
 
 private slots:
     friend class JsonParser;

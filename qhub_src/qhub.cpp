@@ -37,6 +37,7 @@ QHub::QHub():d(new Private)
 
 QHub::~QHub()
 {
+    HubNotification::debugObjectsCount();
     delete d;
 }
 
