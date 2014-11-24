@@ -158,6 +158,32 @@ int NetworkManager::put(const QUrl &url, const QByteArray &data, QObject *object
     return connection->id();
 }
 
+int NetworkManager::patch(const QUrl &url, const QByteArray &data, QObject *object, const char *slot, const QNetworkRequest &request)
+{
+    if(isMaximumRateLimitExceeded()) {
+        qWarning()<<"Maximum rate limit exceeded";
+        return 0;
+    }
+
+    QNetworkRequest p_request = request;
+    p_request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    if(p_request.url().isEmpty()) {
+        p_request.setUrl(url);
+    }
+
+    if(!d->user.isNull())
+    {
+        QByteArray credentials(QString("%1:%2").arg(d->user->username(),d->user->password()).toLatin1());
+        p_request.setRawHeader("Authorization","Basic "+credentials.toBase64());
+    }
+
+    QNetworkReply * rply = d->m_manager->sendCustomRequest(p_request,"POST");
+    NetworkConnection * connection = new NetworkConnection(rply,slot,object);
+    makeDefaultConnections(connection);
+    return connection->id();
+}
+
 bool NetworkManager::hasNetwork() const
 {
     return d->hasNetwork;

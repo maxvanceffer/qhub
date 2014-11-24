@@ -98,6 +98,7 @@ void NetworkConnection::notifyEncrypted()
 void NetworkConnection::reportError()
 {
     qWarning()<<"There was error proccess this request";
+    qWarning()<<"Error code: "<<d->rply->error();
     qWarning()<<"Error: "<<d->rply->errorString();
 }
 

@@ -23,6 +23,7 @@ class HubNotification : public QObject
     Q_PROPERTY(QString type READ type WRITE setType NOTIFY typeChanged)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(QUrl subscriptionUrl READ subscriptionUrl WRITE setSubscriptionUrl NOTIFY subscriptionUrlChanged)
+    Q_PROPERTY(QString repositoryName READ repositoryName NOTIFY repositoryNameChanged)
 public:
     explicit HubNotification(QObject *parent = 0);
     ~HubNotification();
@@ -91,6 +92,12 @@ public:
 
     static int debugObjectsCount();
 
+    /**
+     * @brief repositoryName
+     * @return
+     */
+    QString repositoryName() const;
+
 signals:
     void idChanged(int arg);
     void IsReadChanged(bool arg);
@@ -102,6 +109,7 @@ signals:
     void urlChanged(QUrl arg);
     void subscriptionUrlChanged(QUrl arg);
     void repositoryChanged(HubRepository * arg);
+    void repositoryNameChanged(QString arg);
 
 public slots:
     void setId(int arg);

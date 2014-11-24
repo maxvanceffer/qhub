@@ -116,7 +116,7 @@ void HubNotificationManager::markThreadAsRead(HubNotification * note)
     prepareUrl.replace(":id",QString::number(note->id()));
 
     QUrl url = QUrl(prepareUrl);
-    NetworkManager::instance()->put(url,json,this,"onMarkResponse");
+    NetworkManager::instance()->patch(url,json,this,"onMarkResponse");
 }
 
 void HubNotificationManager::startPolling()

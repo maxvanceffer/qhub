@@ -64,6 +64,18 @@ public:
     int put(const QUrl &url, const QByteArray &data, QObject * object, const char * slot, const QNetworkRequest &request = QNetworkRequest());
 
     /**
+     * @brief patch make a patch request to the server
+     *
+     * @param url
+     * @param data
+     * @param object
+     * @param slot
+     * @param request
+     * @return int id of request object
+     */
+    int patch(const QUrl &url, const QByteArray &data, QObject * object, const char * slot, const QNetworkRequest &request = QNetworkRequest());
+
+    /**
      * @brief hasNetwork
      * @return
      */

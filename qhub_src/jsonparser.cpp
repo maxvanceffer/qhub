@@ -154,7 +154,6 @@ JsonResponse JsonParser::parseNotifications(QByteArray json)
     QJson::Parser parser;
     bool ok;
 
-    qDebug()<<"Notifications "<<json;
     QVariantList list = parser.parse(json,&ok).toList();
     if(!ok) {
         response.setError(true);

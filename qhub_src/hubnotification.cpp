@@ -88,6 +88,11 @@ int HubNotification::debugObjectsCount()
     return countObj;
 }
 
+QString HubNotification::repositoryName() const
+{
+    return d->m_repository->name();
+}
+
 void HubNotification::setId(int arg)
 {
     if (d->m_id == arg)
@@ -177,6 +182,7 @@ void HubNotification::setRepository(HubRepository *arg)
 
     d->m_repository = arg;
     d->m_repository->setParent(this);
+    emit repositoryNameChanged(arg->name());
     emit repositoryChanged(arg);
 }
 
